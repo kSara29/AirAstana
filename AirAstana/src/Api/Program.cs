@@ -1,3 +1,5 @@
+using Application;
+using Infrastructure;
 using Infrastructure.Persistance.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -5,6 +7,8 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddApplicationService();
+builder.Services.AddInfrastructureServices();
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -15,7 +19,11 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<Context>(options => options.UseNpgsql(connectionString));
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
+
+
 var app = builder.Build();
+
+app.MapControllers();  
 
 if (app.Environment.IsDevelopment())
 {
