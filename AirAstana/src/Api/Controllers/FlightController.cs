@@ -22,32 +22,34 @@ public class FlightController: ControllerBase
     /// <returns></returns>
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetAllFLightsAsync()
+    public async Task<IActionResult> GetAllFLightsAsync([FromQuery] FlightDto query)
     {
-        return Ok(await _flightService.GetAllAsync());
+        var desc = query.Order.Equals("desc", StringComparison.OrdinalIgnoreCase);
+        return Ok(await _flightService.GetAllAsync(query.Origin, query.Destination, desc));
     }
 
     /// <summary>
     /// Создание нового рейса
     /// </summary>
-    /// <param name="flight"></param>
+    /// <param name="createFlight">Рейс</param>
     /// <returns></returns>
     [HttpPost]
     [Authorize(Roles = "Moderator")]
-    public async Task<IActionResult> CreateFlightAsync(FlightDto flight)
+    public async Task<IActionResult> CreateFlightAsync(CreateFlightDto createFlight)
     {
-        var result = await _flightService.CreateFlightAsync(flight);
+        var result = await _flightService.CreateFlightAsync(createFlight);
         return Ok(result);
     }
-    
+
     /// <summary>
     /// Обновление рейса
     /// </summary>
-    /// <param name="flight"></param>
+    /// <param name="id">Идентификационный номер</param>
+    /// <param name="flightStatus">Новый статус рейса</param>
     /// <returns></returns>
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Moderator")]
-    public async Task<IActionResult> UpdateFlightAsync(int id, [FromBody] EditFlightDto flightStatus, CancellationToken ct)
+    public async Task<IActionResult> UpdateFlightAsync(int id, [FromBody] EditFlightDto flightStatus)
     {
         var result = await _flightService.UpdateFlightAsync(id, flightStatus);
         return Ok(result);

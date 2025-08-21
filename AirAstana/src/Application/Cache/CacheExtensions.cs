@@ -5,6 +5,8 @@ namespace Application.Cache;
 
 public static class CacheExtensions
 {
+    private const string FlightsListIndex = "flights:list:index";
+    
     public static async Task<T?> GetOrAddAsync<T>(this ICacheService cache, string key, Func<Task<T?>> factory, TimeSpan time)
     {
         var cachedData = cache.GetData<T>(key);
@@ -28,15 +30,27 @@ public static class CacheExtensions
         cache.SetData(key, value, time);
     }
     
-    public static void UpdateById(this ICacheService cache, FlightDto dto, TimeSpan time)
+    public static void UpdateById(this ICacheService cache, CreateFlightDto dto, TimeSpan time)
     {
         if (dto.Id is null) return;
         
         cache.UpsertEntity(CacheKeys.FlightById(dto.Id.Value), dto, time);
-        cache.InvalidateList();
+        cache.InvalidateAllLists();
     }
     
 
-    public static void InvalidateList(this ICacheService cache)
-        => cache.RemoveKeys(CacheKeys.FlightsAll);
+    public static void TrackListKey(this ICacheService cache, string key)
+    {
+        var set = cache.GetData<HashSet<string>>(FlightsListIndex) ?? new();
+        if (set.Add(key))
+            cache.SetData(FlightsListIndex, set, TimeSpan.FromDays(3650));
+    }
+
+    public static void InvalidateAllLists(this ICacheService cache)
+    {
+        var set = cache.GetData<HashSet<string>>(FlightsListIndex);
+        if (set is null) return;
+        foreach (var k in set) cache.RemoveData(k);
+        cache.RemoveData(FlightsListIndex);
+    }
 }

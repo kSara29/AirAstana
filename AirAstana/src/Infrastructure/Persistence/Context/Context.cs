@@ -1,10 +1,8 @@
-﻿using System.Collections.Immutable;
-using System.Reflection;
+﻿using System.Reflection;
 using Domain.Models;
-using Infrastructure.Persistance.Configurations;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Persistance.Context;
+namespace Infrastructure.Persistence.Context;
 
 public class Context : DbContext
 {

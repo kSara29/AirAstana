@@ -1,23 +1,50 @@
 using System.Security.Claims;
+using Api.Filters;
 using Application;
 using Application.Auth;
+using Application.Converters;
+using Application.Validation;
+using Domain.Enums;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Infrastructure;
-using Infrastructure.Persistance.Context;
+using Infrastructure.Persistence.Context;
+using Infrastructure.Persistence.Interceptors;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers()
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog((context, services, cfg) =>
+    cfg.ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext());
+
+builder.Services.AddHttpContextAccessor();
+builder.Logging.ClearProviders();
+
+builder.Services.AddControllers(options =>
+    {
+        options.Filters.Add<FluentValidationFilter>();
+    })
     .AddJsonOptions(o =>
     {
-        o.JsonSerializerOptions.Converters.Add(
-            new System.Text.Json.Serialization.JsonStringEnumConverter(
-                System.Text.Json.JsonNamingPolicy.CamelCase));
+        o.JsonSerializerOptions.Converters.Add(new SafeEnumConverter<FlightStatus>());
+        //o.JsonSerializerOptions.Converters.Add(
+        //    new System.Text.Json.Serialization.JsonStringEnumConverter(
+        //        System.Text.Json.JsonNamingPolicy.CamelCase));
         o.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
@@ -72,12 +99,40 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddApplicationService();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<Context>(options => options.UseNpgsql(connectionString));
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+builder.Services.AddDbContext<Context>((sp, options) =>
+{
+    var cs = builder.Configuration.GetConnectionString("DefaultConnection");
+    options.UseNpgsql(cs);
+    options.AddInterceptors(sp.GetRequiredService<EfInterceptor>());
+});
 
 
 var app = builder.Build();
+
+app.Use(async (ctx, next) =>
+{
+    var userName = ctx.User?.Identity?.IsAuthenticated == true
+        ? (ctx.User.Identity?.Name ?? ctx.User.FindFirst("unique_name")?.Value ?? "auth")
+        : "anonymous";
+
+    using (LogContext.PushProperty("UserName", userName))
+    {
+        await next();
+    }
+});
+
+app.UseExceptionHandler(a =>
+{
+    a.Run(async context =>
+    {
+        var ex = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+        if (ex is not null)
+            Log.Error(ex, "Unhandled exception");
+
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsJsonAsync(new { error = "Internal Server Error" });
+    });
+});
 
 app.UseSwagger();
 app.UseSwaggerUI(s =>

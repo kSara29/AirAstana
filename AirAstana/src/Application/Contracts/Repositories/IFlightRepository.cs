@@ -11,5 +11,5 @@ public interface IFlightRepository
     Task<Flight?> UpdateAsync(int id, FlightStatus newStatus, CancellationToken ct = default);
     Task<DbResults> CreateAsync(Flight flight, CancellationToken ct = default);
     Task<DbResults> DeleteAsync(int id, CancellationToken ct = default);
-    Task<List<Flight>?> GetAllAsync(CancellationToken ct = default);
+    Task<List<Flight>?> GetAllAsync(string? origin, string? destination, bool desc, CancellationToken ct = default);
 }

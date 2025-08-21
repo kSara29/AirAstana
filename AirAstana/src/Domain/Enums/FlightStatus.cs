@@ -2,7 +2,8 @@
 
 public enum FlightStatus
 {
-    InTime = 0, 
-    Delayed = 1, 
-    Cancelled = 2
+    Undefined = 0,
+    InTime = 1, 
+    Delayed = 2, 
+    Cancelled = 3
 }

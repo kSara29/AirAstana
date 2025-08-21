@@ -3,7 +3,7 @@ using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.Persistance.Configurations;
+namespace Infrastructure.Persistence.Configurations;
 
 public class FlightConfiguration : IEntityTypeConfiguration<Flight>
 {

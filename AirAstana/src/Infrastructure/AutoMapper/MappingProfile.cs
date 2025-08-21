@@ -8,7 +8,7 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<FlightDto, Flight>();
-        CreateMap<Flight, FlightDto>();
+        CreateMap<CreateFlightDto, Flight>();
+        CreateMap<Flight, CreateFlightDto>();
     }
 }
