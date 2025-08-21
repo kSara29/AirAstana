@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Application.Cache;
+﻿using Application.Cache;
 using Application.Contracts.Enums;
 using Application.Contracts.Repositories;
 using Application.Models;
@@ -63,16 +62,15 @@ public class FlightService : IFlightService
         return null;
     }
 
-    public async Task<DataResponse> UpdateFlightAsync(FlightDto flight, CancellationToken ct)
+    public async Task<DataResponse> UpdateFlightAsync(int id, EditFlightDto status, CancellationToken ct)
     {
         try
         {
-            var flightToDbFormat = _mapper.Map<Flight>(flight);
-            var result = await _repository.UpdateAsync(flightToDbFormat, ct);
+            var result = await _repository.UpdateAsync(id, status.Status, ct);
 
-            if (result == DbResults.Updated)
+            if (result is not null)
             {
-                var flightDto = _mapper.Map<FlightDto>(flightToDbFormat);
+                var flightDto = _mapper.Map<FlightDto>(result);
                 _cache.UpdateById(flightDto, time);
                 
                 return new DataResponse() { CompletedCount = 1 };

@@ -15,5 +15,10 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
             .IsRequired();
 
         builder.HasIndex(r => r.Code).IsUnique();
+
+        builder.HasData(
+            new Role { Id = 1, Code = "Moderator" },
+            new Role { Id = 2, Code = "User" }
+        );
     }
 }

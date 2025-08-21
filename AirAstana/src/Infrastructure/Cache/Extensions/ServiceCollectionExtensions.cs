@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using Application.Contracts.Services;
+﻿using Application.Contracts.Services;
 using Infrastructure.Cache.Configurations;
 using Infrastructure.Cache.Redis;
 using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
 
 namespace Infrastructure.Cache.Extensions;
 
