@@ -45,9 +45,9 @@
 | User | user1 | QwertyUserOne123@123 |
 | User | user2 | QwertyUserTwo123@123 |
 
-##Старт приложения
-1) Для подтягивания миграций запустить команду из корневой папки (AirAstana)
-dotnet ef database update --project src/Infrastructure --startup-project src/Api --verbose
+## Старт приложения
+1) Для подтягивания миграций запустить команду из корневой папки (AirAstana)\
+   dotnet ef database update --project src/Infrastructure --startup-project src/Api --verbose
 
-2) Поднять образ Redis
+3) Поднять образ Redis \
 docker compose up -d  
