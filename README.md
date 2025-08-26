@@ -44,3 +44,6 @@
 | Moderator | moderator1 | QwertyModerator123 |
 | User | user1 | QwertyUserOne123@123 |
 | User | user2 | QwertyUserTwo123@123 |
+
+Для подтягивания миграций запустить команду из корневой папки (AirAstana)
+dotnet ef database update --project src/Infrastructure --startup-project src/Api --verbose
